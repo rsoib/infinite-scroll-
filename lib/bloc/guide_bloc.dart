@@ -12,7 +12,7 @@ import 'package:stream_transform/stream_transform.dart';
 part 'guide_event.dart';
 part 'guide_state.dart';
 
-const _guideLimit = 3;
+const _guideLimit = 15;
 
 class GuideBloc extends Bloc<GuideEvent, GuideState> {
   GuideBloc({required this.httpClient}) : super(GuideState()) {
@@ -25,6 +25,7 @@ class GuideBloc extends Bloc<GuideEvent, GuideState> {
     if (state.allDataReceived) return;
     try {
       if (state.status == GuideStatus.initial) {
+
         final guides = await _getGuides();
         return emit(state.copyWith(
           status: GuideStatus.success,
@@ -38,24 +39,25 @@ class GuideBloc extends Bloc<GuideEvent, GuideState> {
         guides: List.of(state.guides)..addAll(guides),
         allDataReceived: false,
       ));
-    } catch (_) {
+    } catch (_er) {
+      print('EERRROR ${_er.toString()}');
       emit(state.copyWith(status: GuideStatus.error));
     }
   }
 
   Future<List<Guide>> _getGuides([int startIndex = 0]) async {
-    final response = await httpClient.get(
-      Uri.https(
-        'https://guidebook.com/service/v2/upcomingGuides/',
-        '',
-        <String, String>{'limit': '$_guideLimit'},
-      ),
+    print('2ssss');
+    List<Guide> guidesList = [];
+    print('Full url https://guidebook.com/service/v2/upcomingGuides?limit=$_guideLimit');
+    final response =  await http.get(
+        Uri.parse('https://guidebook.com/service/v2/upcomingGuides?limit=$_guideLimit'),
     );
     if (response.statusCode == 200) {
-      final body = json.decode(response.body) as List;
-      return body.map((dynamic json) {
-        return Guide.fromJson(json);
-      }).toList();
+      final body = json.decode(response.body.toString())['data'];
+      for (Map i in body) {
+        guidesList.add(Guide.fromJson(i));
+      }
+      return guidesList;
     }
     throw Exception('error get guides');
   }
