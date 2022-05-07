@@ -1,13 +1,25 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:meta/meta.dart';
 import 'package:http/http.dart' as http;
 import 'package:test_flutter_project/models/guide.dart';
+import 'package:stream_transform/stream_transform.dart';
+
 
 part 'guide_event.dart';
 part 'guide_state.dart';
+
+const _guideLimit = 3;
+// const throttleDuration = Duration(milliseconds: 100);
+//
+// EventTransformer<E> throttleDroppable<E>(Duration duration) {
+//   return (events, mapper) {
+//     return droppable<E>().call(events.throttle(duration), mapper);
+//   };
+// }
 
 class GuideBloc extends Bloc<GuideEvent, GuideState> {
   GuideBloc({required this.httpClient}) : super(GuideState()) {
@@ -20,14 +32,14 @@ class GuideBloc extends Bloc<GuideEvent, GuideState> {
     if (state.allDataReceived) return;
     try {
       if (state.status == GuideStatus.initial) {
-        final guides = await _fetchPosts();
+        final guides = await _getGuides();
         return emit(state.copyWith(
           status: GuideStatus.success,
           guides: guides,
           allDataReceived: false,
         ));
       }
-      final guides = await _fetchPosts(state.guides.length);
+      final guides = await _getGuides(state.guides.length);
       emit(guides.isEmpty ? state.copyWith(allDataReceived: true)  : state.copyWith(
         status: GuideStatus.success,
         guides: List.of(state.guides)..addAll(guides),
@@ -36,5 +48,22 @@ class GuideBloc extends Bloc<GuideEvent, GuideState> {
     } catch (_) {
       emit(state.copyWith(status: GuideStatus.error));
     }
+  }
+
+  Future<List<Guide>> _getGuides([int startIndex = 0]) async {
+    final response = await httpClient.get(
+      Uri.https(
+        'https://guidebook.com/service/v2/upcomingGuides/',
+        '',
+        <String, String>{'limit': '$_guideLimit'},
+      ),
+    );
+    if (response.statusCode == 200) {
+      final body = json.decode(response.body) as List;
+      return body.map((dynamic json) {
+        return Guide.fromJson(json);
+      }).toList();
+    }
+    throw Exception('error get guides');
   }
 }
