@@ -13,13 +13,6 @@ part 'guide_event.dart';
 part 'guide_state.dart';
 
 const _guideLimit = 3;
-// const throttleDuration = Duration(milliseconds: 100);
-//
-// EventTransformer<E> throttleDroppable<E>(Duration duration) {
-//   return (events, mapper) {
-//     return droppable<E>().call(events.throttle(duration), mapper);
-//   };
-// }
 
 class GuideBloc extends Bloc<GuideEvent, GuideState> {
   GuideBloc({required this.httpClient}) : super(GuideState()) {
