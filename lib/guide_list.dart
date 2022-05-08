@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:test_flutter_project/bloc/guide_bloc.dart';
 import 'package:test_flutter_project/models/guide.dart';
+import 'package:test_flutter_project/one_guide.dart';
 
 class GuideList extends StatefulWidget {
   @override
@@ -57,20 +58,34 @@ class _GuideListState extends State<GuideList> {
   }
 
   _listItem(Guide guide){
-    return ListTile(
-      leading: Image(
-        image: NetworkImage('${guide.icon}'),
+    return InkWell(
+      onTap: () {
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => OneGuide(guide)));
+      },
+      child: Column(
+        children: [
+          Container(
+            child: Image.network(
+              '${guide.icon}',
+              fit: BoxFit.cover,
+              width: 150,
+              height: 150,
+            ),
+          ),
+          Padding(
+            padding: EdgeInsets.only(top: 10, bottom: 10, left: 20, right: 20),
+            child: Text('${guide.name}', textAlign: TextAlign.center, style: TextStyle(
+                color: Colors.white
+            ),),),
+          Text('${guide.endDate}', style: TextStyle(
+              color: Colors.white60
+          )),
+          SizedBox(height: 80,)
+        ],
       ),
-      title: Padding(
-        padding: EdgeInsets.only(top: 10, bottom: 10),
-        child: Text('${guide.name}', style: TextStyle(
-          color: Colors.white
-        ),),),
-      isThreeLine: true,
-      subtitle: Text('${guide.endDate}', style: TextStyle(
-          color: Colors.white60
-      )),
-      dense: true,
     );
   }
 

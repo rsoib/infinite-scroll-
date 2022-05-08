@@ -8,12 +8,11 @@ import 'package:http/http.dart' as http;
 import 'package:test_flutter_project/database.dart';
 import 'package:test_flutter_project/models/guide.dart';
 import 'package:stream_transform/stream_transform.dart';
+import 'package:test_flutter_project/services/get_data_service.dart';
 
 
 part 'guide_event.dart';
 part 'guide_state.dart';
-
-const _guideLimit = 15;
 
 class GuideBloc extends Bloc<GuideEvent, GuideState> {
   GuideBloc({required this.httpClient}) : super(GuideState()) {
@@ -26,7 +25,7 @@ class GuideBloc extends Bloc<GuideEvent, GuideState> {
     if (state.allDataReceived) return;
     try {
       if (state.status == GuideStatus.initial) {
-        final guides = await _getGuides();
+        final guides = await GetDataService.getGuides();
 
         LocalDatabase localDatabase = LocalDatabase();
         localDatabase.saveToDatabase(guides);
@@ -37,7 +36,7 @@ class GuideBloc extends Bloc<GuideEvent, GuideState> {
           allDataReceived: false,
         ));
       }
-      final guides = await _getGuides(state.guides.length);
+      final guides = await GetDataService.getGuides();
       LocalDatabase().saveToDatabase(guides);
       emit(guides.isEmpty ? state.copyWith(allDataReceived: true)  : state.copyWith(
         status: GuideStatus.success,
@@ -48,22 +47,5 @@ class GuideBloc extends Bloc<GuideEvent, GuideState> {
       print('EERROR ${_er.toString()}');
       emit(state.copyWith(status: GuideStatus.error));
     }
-  }
-
-  Future<List<Guide>> _getGuides([int startIndex = 0]) async {
-    print('2ssss');
-    List<Guide> guidesList = [];
-    print('Full url https://guidebook.com/service/v2/upcomingGuides?limit=$_guideLimit');
-    final response =  await http.get(
-        Uri.parse('https://guidebook.com/service/v2/upcomingGuides?limit=$_guideLimit'),
-    );
-    if (response.statusCode == 200) {
-      final body = json.decode(response.body.toString())['data'];
-      for (Map i in body) {
-        guidesList.add(Guide.fromJson(i));
-      }
-      return guidesList;
-    }
-    throw Exception('error get guides');
   }
 }
