@@ -4,8 +4,6 @@ class Guide {
   late String? endDate;
   late String? name;
   late String? icon;
-  late String? objType;
-  late bool? loginRequired;
 
   Guide({
     this.url,
@@ -13,8 +11,6 @@ class Guide {
     this.endDate,
     this.name,
     this.icon,
-    this.objType,
-    this.loginRequired
   });
 
   factory Guide.fromJson(dynamic json) {
@@ -24,8 +20,16 @@ class Guide {
       endDate: json["endDate"],
       name: json["name"],
       icon: json["icon"],
-      objType: json["objType"],
-      loginRequired: json["loginRequired"],
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'url': url,
+      'startDate': startDate,
+      'endDate': endDate,
+      'name': name,
+      'icon': icon,
+    };
   }
 }
