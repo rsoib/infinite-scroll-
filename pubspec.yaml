@@ -39,6 +39,7 @@ dependencies:
   equatable: ^2.0.3
   stream_transform: ^2.0.0
   sqflite: ^2.0.2+1
+  webview_flutter: ^3.0.2
 
 dev_dependencies:
   flutter_test:
