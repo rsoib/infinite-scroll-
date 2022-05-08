@@ -5,6 +5,7 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:meta/meta.dart';
 import 'package:http/http.dart' as http;
+import 'package:test_flutter_project/database.dart';
 import 'package:test_flutter_project/models/guide.dart';
 import 'package:stream_transform/stream_transform.dart';
 
@@ -25,8 +26,11 @@ class GuideBloc extends Bloc<GuideEvent, GuideState> {
     if (state.allDataReceived) return;
     try {
       if (state.status == GuideStatus.initial) {
-
         final guides = await _getGuides();
+
+        LocalDatabase localDatabase = LocalDatabase();
+        localDatabase.saveToDatabase(guides);
+
         return emit(state.copyWith(
           status: GuideStatus.success,
           guides: guides,
@@ -34,13 +38,14 @@ class GuideBloc extends Bloc<GuideEvent, GuideState> {
         ));
       }
       final guides = await _getGuides(state.guides.length);
+      LocalDatabase().saveToDatabase(guides);
       emit(guides.isEmpty ? state.copyWith(allDataReceived: true)  : state.copyWith(
         status: GuideStatus.success,
         guides: List.of(state.guides)..addAll(guides),
         allDataReceived: false,
       ));
     } catch (_er) {
-      print('EERRROR ${_er.toString()}');
+      print('EERROR ${_er.toString()}');
       emit(state.copyWith(status: GuideStatus.error));
     }
   }

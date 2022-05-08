@@ -37,6 +37,8 @@ dependencies:
   flutter_bloc: ^8.0.1
   http: ^0.13.0
   equatable: ^2.0.3
+  stream_transform: ^2.0.0
+  sqflite: ^2.0.2+1
 
 dev_dependencies:
   flutter_test:
